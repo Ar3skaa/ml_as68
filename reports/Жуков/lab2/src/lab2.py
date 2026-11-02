@@ -1,36 +1,27 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_absolute_error, r2_score
 
-# 1. Загрузка и обработка категориальных признаков
+
 df = pd.read_csv("medical_cost_personal_dataset.csv")
 df["sex"] = df["sex"].map({"male": 1, "female": 0})
 df["smoker"] = df["smoker"].map({"yes": 1, "no": 0})
 df = pd.get_dummies(df, columns=["region"], drop_first=True, dtype=int)
 
-# 2. Разделение 80/20
-test = df.sample(frac=0.2, random_state=42)
-train = df.drop(test.index)
+X = df.drop(columns=["charges"])
+y = df['charges']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2,random_state=42)
 
-features = [c for c in df.columns if c != "charges"]
-X_train = train[features].to_numpy(dtype=float)
-X_test = test[features].to_numpy(dtype=float)
-y_train = train["charges"].to_numpy(dtype=float)
-y_test = test["charges"].to_numpy(dtype=float)
+model = LinearRegression().fit(X_train, y_train)
+y_pred = model.predict(X_test)
 
-# 3. Линейная регрессия (добавляем столбец единиц для свободного члена)
-add_bias = lambda X: np.column_stack([np.ones(len(X)), X])
-beta, *_ = np.linalg.lstsq(add_bias(X_train), y_train, rcond=None)
-y_pred = add_bias(X_test) @ beta
+print(f"MAE: {mean_absolute_error(y_test, y_pred):.2f}")
+print(f"R2 : {r2_score(y_test, y_pred):.3f}")
+print(pd.Series(model.coef_, index=X.columns).sort_values())
 
-# 4. Метрики
-mae = np.mean(np.abs(y_test - y_pred))
-r2 = 1 - np.sum((y_test - y_pred) ** 2) / np.sum((y_test - y_test.mean()) ** 2)
-print(f"MAE: {mae:.2f}")
-print(f"R2 : {r2:.3f}")
-print(pd.Series(beta[1:], index=features).sort_values())
-
-# 5. Диаграмма рассеяния charges от bmi + линия регрессии
 k, b = np.polyfit(df["bmi"], df["charges"], 1)
 x_line = np.linspace(df["bmi"].min(), df["bmi"].max(), 100)
 
