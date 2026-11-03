@@ -19,11 +19,6 @@ df = pd.read_csv("pima-indians-diabetes.csv")
 
 df.columns = df.columns.str.strip()
 
-print("Первые строки данных:")
-print(df.head())
-
-print("\nРазмер датасета:", df.shape)
-
 zero_as_missing = [
     "Glucose",
     "BloodPressure",
@@ -34,9 +29,6 @@ zero_as_missing = [
 
 for column in zero_as_missing:
     df[column] = df[column].replace(0, float("nan"))
-
-print("\nПропуски до обработки:")
-print(df.isnull().sum())
 
 df = df.dropna(subset=["Outcome"])
 
@@ -59,8 +51,6 @@ model = Pipeline([
 
 model.fit(X_train, y_train)
 
-print("\nМодель успешно обучена.")
-
 y_pred = model.predict(X_test)
 
 accuracy = accuracy_score(y_test, y_pred)
@@ -77,9 +67,6 @@ print("\nМетрики качества модели:")
 print("Accuracy =", round(accuracy, 3))
 print("Precision =", round(precision, 3))
 print("Recall =", round(recall, 3))
-
-print("\nПодробный отчёт:")
-print(classification_report(y_test, y_pred, zero_division=0))
 
 cm = confusion_matrix(y_test, y_pred, labels=[0, 1])
 

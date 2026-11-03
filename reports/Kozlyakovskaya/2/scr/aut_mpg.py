@@ -12,16 +12,11 @@ df = pd.read_csv("auto-mpg.csv")
 
 df.columns = df.columns.str.strip()
 
-df = df.replace("?", float("nan"))
-
 columns = ["mpg", "cylinders", "horsepower", "weight"]
 df = df[columns].copy()
 
 for column in columns:
     df[column] = pd.to_numeric(df[column], errors="coerce")
-
-print("Пропуски до обработки:")
-print(df.isnull().sum())
 
 df = df.dropna(subset=["mpg"])
 
@@ -41,8 +36,6 @@ model = make_pipeline(
 )
 
 model.fit(X_train, y_train)
-
-print("\nМодель успешно обучена.")
 
 y_pred = model.predict(X_test)
 
